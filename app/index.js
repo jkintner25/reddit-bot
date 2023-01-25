@@ -18,7 +18,6 @@ const getGames = async () => {
   const tableRows = await page.evaluate(() => Array.from(document.querySelectorAll('tr'), (e) => e.innerText));
   tableRows.shift();
 
-  const boxScoreLinks = await page.evaluate(() => Array.from(document.querySelectorAll('li.sidearm-schedule-game-links-boxscore > a'), (e) => e.href));
   let gameData = tableRows.map(row => {
     let rowArr = row.split('\t');
     rowArr.splice(6, 3);
