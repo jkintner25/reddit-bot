@@ -1,9 +1,8 @@
-import dayjs from "dayjs";
 import fetch from "node-fetch";
 import puppeteer from "puppeteer";
 
-(async () => {
-  const browswer = await puppeteer.launch({
+const getGames = async () => {
+  const browser = await puppeteer.launch({
     headless: true, args: [
       "--disable-gpu",
       "--disable-dev-shm-usage",
@@ -12,57 +11,58 @@ import puppeteer from "puppeteer";
     ]
   });
 
-  const page = await browswer.newPage();
+  const page = await browser.newPage();
   await page.setDefaultNavigationTimeout(0);
   await page.goto('https://rolltide.com/sports/mens-basketball/schedule/2022-23?grid=true');
 
-  const gamesHandler = await page.$$('tr');
+  const tableRows = await page.evaluate(() => Array.from(document.querySelectorAll('tr'), (e) => e.innerText));
+  tableRows.shift();
 
+  const boxScoreLinks = await page.evaluate(() => Array.from(document.querySelectorAll('li.sidearm-schedule-game-links-boxscore > a'), (e) => e.href));
+  let gameData = tableRows.map(row => {
+    let rowArr = row.split('\t');
+    rowArr.splice(6, 3);
+    rowArr.pop();
+    return rowArr;
+  });
 
-  const getMyGames = async () => {
-    // let myGames = [];
-    for (const game of gamesHandler) {
-      const data = await page.evaluate(el => el.innerText, game)
-      console.log(data)
-      // myGames.push(data)
-    };
-  };
+  const games = gameData.map(([date, time, home, opponent, location, tv]) => {
+    return { date, time, home, opponent, location, tv }
+  });
 
-  getMyGames()
+  const espn = await browser.newPage();
+  await espn.setDefaultNavigationTimeout(0)
+  await espn.goto('https://www.espn.com/mens-college-basketball/team/_/id/333/alabama-crimson-tide');
 
-  // for (const game of games) {
-  //   const data = await page.evaluate(el => el.querySelector('tr').innerText, game)
-  //   console.log(data)
-  // }
+  const alabamaRank = await espn.evaluate(() => Array.from(document.querySelectorAll('span.ClubhouseHeader__Rank'), (e) => e.innerHTML));
 
-  // const gameTimes = await page.$$('.sidearm-schedule-game-opponent-date .flex-item-1')
-  // console.log(gameTimes)
-  // const gameTimeDiv = await page.$$('.flex .flex flex-justify-between')
+  const [rank] = alabamaRank;
 
-  // const data3 = await page.evaluate(el => el.querySelector('li').innerText, games)
+  await browser.close();
+  return { games, rank };
+};
 
-  // const testData = await page.$$eval('li', lis => lis.length)
-  // console.log(testData)
+export default getGames;
 
-  // for (const game of games) {
-  //   const data = await page.evaluate(el => el.querySelector('tr > div :nth-child(2) > div > div > span').textContent, game)
-  //   console.log(data)
-  // }
-
-  // for (const gameTime of gameTimeDiv) {
-  //   const data = await page.evaluate(el => el.innerText, gameTimeDiv)
-  //   console.log(data)
-  // }
-
-
-  // await browswer.close();
-})();
+// ****************Object Data Structure*********************
+/*
+gameData = {
+  date: '',
+  time: '',
+  home: '',
+  opponent: '',
+  location: '',
+  tv: '',
+  result: '',
+  boxScores: ''
+}
+*/
 
 // ************sports data api******************
 // let schedule;
 
 // const getSchedule = async () => {
-//   const res = await fetch('https://api.sportsdata.io/v3/cbb/scores/json/TeamSchedule/2023/ALA?key=167102da31ec4a78be178a65a37f1b53');
+  // const res = await fetch(process.env.SPORTS_DATA_API_ADDRESS);
 //   schedule = await res.json();
 //   const homeGames = schedule.filter(game => game.HomeTeam === 'ALA')
 //   schedule.sort((a, b) => dayjs(a.DateTime) - dayjs(b.DateTime))
@@ -70,6 +70,3 @@ import puppeteer from "puppeteer";
 // }
 
 // getSchedule()
-
-//Ocp-Apim-Subscription-Key
-//api key: 167102da31ec4a78be178a65a37f1b53
