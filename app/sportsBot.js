@@ -1,10 +1,24 @@
+import dayjs from "dayjs";
 // import getGames from "./index.js";
-import { gameIsToday } from "./utils.js";
+import { gameIsToday, createPost } from "./utils.js";
 import Snoowrap from "snoowrap";
 import dotenv from 'dotenv'
+
 dotenv.config();
 
-const alabamaGames = await getGames();
+// const alabama = await getGames();
+
+// let futureGames = alabama.games.filter(game => {
+//   if (game.date.includes('2022')) return false;
+//   else {
+//     let dateString = game.date.split('2023');
+//     let newDate = dateString[0].concat('2023');
+//     let date = dayjs(newDate, 'MMMM D, YYYY');
+//     return dayjs().isBefore(date);
+//   }
+// });
+
+// console.log(futureGames)
 
 const r = new Snoowrap({
   userAgent: 'Bama Sports Posts',
@@ -13,16 +27,13 @@ const r = new Snoowrap({
   refreshToken: process.env.REFRESH_TOKEN
 });
 
-r.getSubreddit('bamasportspostsbot').submitLink({
-  title: 'Men\'s Basketball',
-  url: 'https://rolltide.com/sports/mens-basketball'
-});
+// for (let i = 0; i < futureGames.length; i++) {
+//   let game = futureGames[i];
+//   r.getSubreddit('choctaws').submitSelfpost(createPost(game, alabama.rank));
+// };
 
-for (let i = 0; i < alabamaGames.games.length; i++) {
-  let game = alabamaGames.games[i];
-  if (gameIsToday(game.date)) {
+r.getSubreddit('rolltide').getLinkFlairTemplates().then(console.log)
 
-  } else {
-    continue
-  };
-};
+// let todaysGame = alabama.games.filter((game) => {
+//   console.log(game.date, gameIsToday(game.date))
+// })
