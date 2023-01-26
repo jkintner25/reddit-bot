@@ -41,4 +41,4 @@ export const createPost = (game, rank) => {
 
 //8pm CST - Wednesday, 1/25
 
-console.log(formatDateTime('March 1, 2023 (Wednesday)', '6 p.m. CT'))
+// console.log(formatDateTime('March 1, 2023 (Wednesday)', '6 p.m. CT'))
